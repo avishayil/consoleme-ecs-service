@@ -1,0 +1,20 @@
+*.swp
+package-lock.json
+__pycache__
+.pytest_cache
+.env
+.venv
+*.egg-info
+node_modules
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+
+# Environment files
+.idea
+.vscode
+pyproject.toml
+
+# Main configuration file
+/config.yaml
