@@ -5,22 +5,22 @@ from aws_cdk import (
 )
 
 
-class ConsolemeIAMStack(cdk.NestedStack):
+class IAMStack(cdk.NestedStack):
 
     def __init__(self, scope: cdk.Construct, id: str,
-                 consoleme_s3_bucket: s3.Bucket, **kwargs) -> None:
+                 s3_bucket: s3.Bucket, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # Define IAM roles and policies
 
-        consoleme_ecs_task_role = iam.Role(
+        ecs_task_role = iam.Role(
             self,
-            f'{id}TaskRole',
+            'TaskRole',
             role_name='ConsolemeTaskRole',
             assumed_by=iam.ServicePrincipal('ecs-tasks.amazonaws.com')
         )
 
-        consoleme_ecs_task_role.add_to_policy(
+        ecs_task_role.add_to_policy(
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=[
@@ -56,7 +56,7 @@ class ConsolemeIAMStack(cdk.NestedStack):
             )
         )
 
-        consoleme_ecs_task_role.add_to_policy(
+        ecs_task_role.add_to_policy(
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=['ses:sendemail', 'ses:sendrawemail'],
@@ -65,7 +65,7 @@ class ConsolemeIAMStack(cdk.NestedStack):
             )
         )
 
-        consoleme_ecs_task_role.add_to_policy(
+        ecs_task_role.add_to_policy(
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=[
@@ -102,26 +102,26 @@ class ConsolemeIAMStack(cdk.NestedStack):
                     'sqs:TagQueue',
                     'sqs:UntagQueue'
                 ],
-                resources=['*'],
+                resources=['*']
             )
         )
 
-        consoleme_ecs_task_role.add_to_policy(
+        ecs_task_role.add_to_policy(
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=['s3:GetObject', 's3:ListBucket'],
-                resources=[consoleme_s3_bucket.bucket_arn, consoleme_s3_bucket.bucket_arn + '/*']
+                resources=[s3_bucket.bucket_arn, s3_bucket.bucket_arn + '/*']
             )
         )
 
-        consoleme_trust_role = iam.Role(
+        trust_role = iam.Role(
             self,
-            f'{id}TrustRole',
+            'TrustRole',
             role_name='ConsolemeTrustRole',
-            assumed_by=iam.ArnPrincipal(arn=consoleme_ecs_task_role.role_arn)
+            assumed_by=iam.ArnPrincipal(arn=ecs_task_role.role_arn)
         )
 
-        consoleme_trust_role.add_to_policy(
+        trust_role.add_to_policy(
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=[
@@ -189,48 +189,48 @@ class ConsolemeIAMStack(cdk.NestedStack):
             )
         )
 
-        consoleme_ecs_task_execution_role = iam.Role(
+        ecs_task_execution_role = iam.Role(
             self,
-            f'{id}TaskExecutionRole',
+            'TaskExecutionRole',
             assumed_by=iam.ServicePrincipal('ecs-tasks.amazonaws.com')
         )
 
-        consoleme_ecs_task_execution_role.add_managed_policy(
+        ecs_task_execution_role.add_managed_policy(
             iam.ManagedPolicy.from_managed_policy_arn(
                 self,
-                f'{id}ServiceRole',
+                'ServiceRole',
                 managed_policy_arn='arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
             )
         )
 
-        consoleme_create_configuration_lambda_role = iam.Role(
+        create_configuration_lambda_role = iam.Role(
             self,
-            f'{id}CreateConfigurationFileLambdaRole',
+            'CreateConfigurationFileLambdaRole',
             assumed_by=iam.ServicePrincipal(service='lambda.amazonaws.com')
         )
 
-        consoleme_create_configuration_lambda_role.add_managed_policy(
+        create_configuration_lambda_role.add_managed_policy(
             iam.ManagedPolicy.from_managed_policy_arn(
                 self,
-                f'{id}ConfigurationBasicExecution',
+                'ConfigurationBasicExecution',
                 managed_policy_arn='arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
             )
         )
 
-        consoleme_create_configuration_lambda_role.add_to_policy(
+        create_configuration_lambda_role.add_to_policy(
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=['s3:PutObject', 's3:DeleteObject'],
-                resources = [consoleme_s3_bucket.bucket_arn + '/*']
+                resources = [s3_bucket.bucket_arn + '/*']
             )
         )
 
-        consoleme_configuration_lambda_statement = iam.PolicyStatement(
+        configuration_lambda_statement = iam.PolicyStatement(
             effect=iam.Effect.ALLOW,
             actions=['s3:PutObject'],
-            resources=[consoleme_create_configuration_lambda_role.role_arn]
+            resources=[create_configuration_lambda_role.role_arn]
         )
 
-        self.consoleme_ecs_task_role = consoleme_ecs_task_role
-        self.consoleme_ecs_task_execution_role = consoleme_ecs_task_execution_role
-        self.consoleme_create_configuration_lambda_role = consoleme_create_configuration_lambda_role
+        self.ecs_task_role = ecs_task_role
+        self.ecs_task_execution_role = ecs_task_execution_role
+        self.create_configuration_lambda_role = create_configuration_lambda_role

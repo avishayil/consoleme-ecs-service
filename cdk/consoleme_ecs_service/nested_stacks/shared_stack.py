@@ -5,17 +5,17 @@ from aws_cdk import (
 )
 
 
-class ConsolemeSharedStack(cdk.NestedStack):
+class SharedStack(cdk.NestedStack):
 
     def __init__(self, scope: cdk.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        consoleme_s3_bucket = s3.Bucket(
+        s3_bucket = s3.Bucket(
             self,
-            f'{id}ConfigBucket',
+            'ConfigBucket',
             removal_policy=cdk.RemovalPolicy.DESTROY,
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
             encryption=s3.BucketEncryption.S3_MANAGED
         )
 
-        self.s3_bucket = consoleme_s3_bucket
+        self.s3_bucket = s3_bucket
