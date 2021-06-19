@@ -5,7 +5,7 @@
 
 ConsoleMe is a web service that makes AWS IAM permissions and credential management easier for end-users and cloud administrators.
 
-Recently, I started to work on a new project and found the need to deploy ConsoleMe in a way that it would be available for multiple users, authenticating with the corporate authentication tools and run notebooks without managing servers.
+Recently, I started to work on a new project and found the need to deploy ConsoleMe in a way that it would be available for multiple users, authenticating with the corporate authentication tools and scaled without managing servers.
 
 ## Architecture
 

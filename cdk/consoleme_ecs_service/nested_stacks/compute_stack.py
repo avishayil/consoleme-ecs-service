@@ -13,7 +13,7 @@ from aws_cdk import (
 from constants import CONTAINER_IMAGE
 
 
-class ConsolemeComputeStack(cdk.NestedStack):
+class ComputeStack(cdk.NestedStack):
 
     def __init__(self, scope: cdk.Construct, id: str,
                  vpc: ec2.Vpc, service_sg: ec2.SecurityGroup,
@@ -29,19 +29,19 @@ class ConsolemeComputeStack(cdk.NestedStack):
 
         imported_task_role = iam.Role.from_role_arn(
             self,
-            f'{id}ImportedTaskRole',
+            'ImportedTaskRole',
             role_arn=task_role_arn
         )
 
         imported_task_execution_role = iam.Role.from_role_arn(
             self,
-            f'{id}ImportedTaskExecutionRole',
+            'ImportedTaskExecutionRole',
             role_arn=task_execution_role_arn
         )
 
-        consoleme_ecs_task_definition = ecs.FargateTaskDefinition(
+        ecs_task_definition = ecs.FargateTaskDefinition(
             self,
-            f'{id}TaskDefinition',
+            'TaskDefinition',
             cpu=2048,
             memory_limit_mib=4096,
             execution_role=imported_task_execution_role,
@@ -50,8 +50,8 @@ class ConsolemeComputeStack(cdk.NestedStack):
 
         # ECS Container definition, service, target group and ALB attachment
 
-        consoleme_container = consoleme_ecs_task_definition.add_container(
-            f'{id}Container',
+        container = ecs_task_definition.add_container(
+            'Container',
             image=ecs.ContainerImage.from_registry(CONTAINER_IMAGE),
             privileged=False,
             port_mappings=[
@@ -62,7 +62,7 @@ class ConsolemeComputeStack(cdk.NestedStack):
                 )
             ],
             logging=ecs.LogDriver.aws_logs(
-                stream_prefix=f'{id}ContainerLogs-',
+                stream_prefix='ContainerLogs-',
                 log_retention=logs.RetentionDays.ONE_WEEK
             ),
             environment={
@@ -74,12 +74,12 @@ class ConsolemeComputeStack(cdk.NestedStack):
                 "bash", "-c", "python scripts/retrieve_or_decode_configuration.py; python consoleme/__main__.py"]
         )
 
-        consoleme_celery_container = consoleme_ecs_task_definition.add_container(
-            f'{id}CeleryContainer',
+        celery_container = ecs_task_definition.add_container(
+            'CeleryContainer',
             image=ecs.ContainerImage.from_registry(CONTAINER_IMAGE),
             privileged=False,
             logging=ecs.LogDriver.aws_logs(
-                stream_prefix=f'{id}CeleryContainerLogs-',
+                stream_prefix='CeleryContainerLogs-',
                 log_retention=logs.RetentionDays.ONE_WEEK
             ),
             environment={
@@ -93,41 +93,41 @@ class ConsolemeComputeStack(cdk.NestedStack):
 
         # ECS cluster
 
-        consoleme_cluster = ecs.Cluster(
-            self, f'{id}Cluster',
+        cluster = ecs.Cluster(
+            self, 'Cluster',
             vpc=vpc
         )
 
         imported_alb = lb.ApplicationLoadBalancer.from_application_load_balancer_attributes(
             self,
-            f'{id}ServiceImportedALB',
+            'ServiceImportedALB',
             load_balancer_arn=alb.load_balancer_arn,
             vpc=vpc,
             security_group_id=alb_sg.security_group_id,
             load_balancer_dns_name=alb.load_balancer_dns_name
         )
 
-        consoleme_ecs_service = ecs_patterns.ApplicationLoadBalancedFargateService(
-            self, f'{id}Service',
-            cluster=consoleme_cluster,
-            task_definition=consoleme_ecs_task_definition,
+        ecs_service = ecs_patterns.ApplicationLoadBalancedFargateService(
+            self, 'Service',
+            cluster=cluster,
+            task_definition=ecs_task_definition,
             load_balancer=imported_alb,
             desired_count=1,
             security_groups=[service_sg],
             open_listener=False
         )
 
-        consoleme_ecs_service.target_group.configure_health_check(
+        ecs_service.target_group.configure_health_check(
             path='/',
             enabled=True,
             healthy_http_codes='200-302'
         )
 
         imported_alb.add_listener(
-            f'{id}ServiceALBListener',
+            'ServiceALBListener',
             protocol=lb.ApplicationProtocol.HTTPS,
             port=443,
             certificates=[certificate],
             default_action=lb.ListenerAction.forward(
-                target_groups=[consoleme_ecs_service.target_group])
+                target_groups=[ecs_service.target_group])
         )

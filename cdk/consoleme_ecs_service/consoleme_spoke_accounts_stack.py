@@ -17,14 +17,14 @@ class ConsolemeSpokeAccountsStack(cdk.Stack):
                            boto3.client('sts').get_caller_identity().get(
                                'Account') + ':role/ConsolemeTaskRole'
 
-        consoleme_spoke_role = iam.Role(
+        spoke_role = iam.Role(
             self,
             f'{SPOKE_BASE_NAME}TrustRole',
             role_name='ConsolemeTrustRole',
             assumed_by=iam.ArnPrincipal(arn=trusted_role_arn)
         )
 
-        consoleme_spoke_role.add_to_policy(
+        spoke_role.add_to_policy(
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=[

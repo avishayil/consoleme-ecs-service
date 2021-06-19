@@ -38,7 +38,7 @@ setuptools.setup(
         "aws_cdk.aws_dynamodb>=1.107.0",
         "aws_cdk.custom_resources>=1.107.0",
         "aws_cdk.aws_lambda>=1.107.0",
-        "aws-cdk.aws-lambda-python>=1.107.0"
+        "aws-cdk.aws-lambda-python>=1.107.0",
         "PyYAML>=5.3.1",
     ],
 

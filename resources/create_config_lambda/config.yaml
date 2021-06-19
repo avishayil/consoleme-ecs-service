@@ -7,8 +7,6 @@ tornado:
   xsrf_cookie_kwargs:
     samesite: strict
 
-jwt_secret: {jwt_secret}
-
 auth:
   require_jwt: true
   set_auth_cookie: true
@@ -20,6 +18,7 @@ oidc_secrets:
   client_scope:
     - email
     - openid
+jwt_secret: {jwt_secret}
 
 get_user_by_oidc_settings:
   metadata_url: {oidc_metadata_url}
