@@ -12,7 +12,6 @@ install:
   - pipenv install --dev
   - nvm install 12.18.0 && nvm use 12.18.0
   - npm install aws-cdk cdk-assume-role-credential-plugin -g
-  - pre-commit install
 script:
   - cp config.yaml.example config.yaml && cdk synth
 test:

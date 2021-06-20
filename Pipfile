@@ -13,7 +13,6 @@ pylint-venv = "*"
 pre-commit = "*"
 gitlint = "*"
 yamllint = "*"
-checkov = "*"
 
 [packages]
 boto3 = "*"
