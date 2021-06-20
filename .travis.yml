@@ -22,7 +22,6 @@ jobs:
       script:
         - cp config.yaml.example config.yaml && cdk synth
     - stage: Tests
-      name: "Unit Tests"
       script:
         - yamllint .
         - pytest
