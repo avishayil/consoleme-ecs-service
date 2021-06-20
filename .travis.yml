@@ -14,7 +14,7 @@ install:
   - npm install aws-cdk cdk-assume-role-credential-plugin -g
   - pre-commit install
 script:
-  - cdk synth
+  - cp config.yaml.example config.yaml && cdk synth
 test:
   - yamllint .
   - pytest
