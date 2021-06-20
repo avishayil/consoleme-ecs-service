@@ -7,6 +7,8 @@ from aws_cdk import (
     aws_route53_targets as route53_targets,
     aws_elasticloadbalancingv2 as lb,
     aws_certificatemanager as acm,
+    aws_logs as logs,
+    custom_resources as cr,
     core as cdk
 )
 
@@ -35,6 +37,26 @@ class DomainStack(cdk.NestedStack):
             record_name=APPLICATION_PREFIX,
             target=route53.RecordTarget(alias_target=(
                 route53_targets.LoadBalancerTarget(alb)))
+        )
+
+        verify_ses_identity = cr.AwsCustomResource(
+            self,
+            'VerifySESIdentityResource',
+            policy=cr.AwsCustomResourcePolicy.from_sdk_calls(
+                resources=cr.AwsCustomResourcePolicy.ANY_RESOURCE),
+            on_create=cr.AwsSdkCall(
+                service='SES',
+                action='verifyDomainIdentity',
+                parameters={'Domain': route53_record.domain_name},
+                physical_resource_id=cr.PhysicalResourceId.from_response('VerificationToken')
+            ),
+            on_delete=cr.AwsSdkCall(
+                service='SES',
+                action='deleteIdentity',
+                parameters={'Identity': route53_record.domain_name}
+            ),
+            install_latest_aws_sdk=True,
+            log_retention=logs.RetentionDays.ONE_WEEK
         )
 
         certificate = acm.Certificate(

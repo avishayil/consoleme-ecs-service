@@ -39,6 +39,18 @@ celery:
     global: redis://{redis_host}:6379/2
   active_region: {aws_region}
 
+ses:
+  region: {aws_region}
+  consoleme:
+    name: ConsoleMe
+    sender: consoleme_admin@{issuer}
+  support_reference: >-
+    Please contact us at consoleme_admin@{issuer} if you have any
+    questions or concerns.
+  arn: {ses_identity_arn}
+  support_chat_url: {support_chat_url}
+  documentation_page: https://hawkins.gitbook.io/consoleme/
+
 cloud_credential_authorization_mapping:
   role_tags:
     enabled: true
