@@ -21,7 +21,7 @@ class DomainStack(cdk.NestedStack):
     Domain stack for running ConsoleMe on ECS
     """
 
-    def __init__(self, scope: cdk.Construct, id: str, alb: lb.ApplicationLoadBalancer, **kwargs) -> None:
+    def __init__(self, scope: cdk.Construct, id: str, consoleme_alb: lb.ApplicationLoadBalancer, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         hosted_zone = route53.PublicHostedZone.from_hosted_zone_attributes(
@@ -37,7 +37,7 @@ class DomainStack(cdk.NestedStack):
             zone=hosted_zone,
             record_name=APPLICATION_PREFIX,
             target=route53.RecordTarget(alias_target=(
-                route53_targets.LoadBalancerTarget(alb)))
+                route53_targets.LoadBalancerTarget(consoleme_alb)))
         )
 
         verify_ses_identity = cr.AwsCustomResource(
