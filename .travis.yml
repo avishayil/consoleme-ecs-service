@@ -20,4 +20,3 @@ script:
   - yamllint .
   - pytest
   - python -m pylint app.py `find tests/ -iname "*.py"; find cdk/ -iname "*.py"` --rcfile .pylintrc
-
