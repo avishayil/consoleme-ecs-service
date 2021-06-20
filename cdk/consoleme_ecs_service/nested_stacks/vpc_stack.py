@@ -44,14 +44,6 @@ class VPCStack(cdk.NestedStack):
             description='Allow HTTPS traffic'
         )
 
-        celery_sg = ec2.SecurityGroup(
-            self,
-            'CelerySG',
-            vpc=vpc,
-            allow_all_outbound=True,
-            description='Celery security group'
-        )
-
         redis_sg = ec2.SecurityGroup(
             self,
             'ECSG',
@@ -66,5 +58,3 @@ class VPCStack(cdk.NestedStack):
         self.vpc = vpc
         self.redis_sg = redis_sg
         self.consoleme_sg = consoleme_sg
-        self.celery_sg = celery_sg
-

@@ -24,7 +24,6 @@ class ComputeStack(cdk.NestedStack):
 
     def __init__(self, scope: cdk.Construct, id: str,
                  vpc: ec2.Vpc, s3_bucket_name: str, certificate: acm.Certificate,
-                 celery_alb: lb.ApplicationLoadBalancer, celery_sg: ec2.SecurityGroup,
                  consoleme_alb: lb.ApplicationLoadBalancer, consoleme_sg: ec2.SecurityGroup,
                  task_role_arn: str, task_execution_role_arn: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
@@ -46,15 +45,6 @@ class ComputeStack(cdk.NestedStack):
         consoleme_ecs_task_definition = ecs.FargateTaskDefinition(
             self,
             'ConsolemeTaskDefinition',
-            cpu=2048,
-            memory_limit_mib=4096,
-            execution_role=imported_task_execution_role,
-            task_role=imported_task_role
-        )
-
-        celery_ecs_task_definition = ecs.FargateTaskDefinition(
-            self,
-            'CeleryTaskDefinition',
             cpu=2048,
             memory_limit_mib=4096,
             execution_role=imported_task_execution_role,
@@ -87,17 +77,10 @@ class ComputeStack(cdk.NestedStack):
                 "bash", "-c", "python scripts/retrieve_or_decode_configuration.py; python consoleme/__main__.py"]
         )
 
-        celery_ecs_task_definition.add_container(
+        consoleme_ecs_task_definition.add_container(
             'CeleryContainer',
             image=ecs.ContainerImage.from_registry(CONTAINER_IMAGE),
             privileged=False,
-            port_mappings=[
-                ecs.PortMapping(
-                    container_port=6379,
-                    host_port=6379,
-                    protocol=ecs.Protocol.TCP
-                )
-            ],
             logging=ecs.LogDriver.aws_logs(
                 stream_prefix='CeleryContainerLogs-',
                 log_retention=logs.RetentionDays.ONE_WEEK
@@ -116,32 +99,6 @@ class ComputeStack(cdk.NestedStack):
         cluster = ecs.Cluster(
             self, 'Cluster',
             vpc=vpc
-        )
-
-        celery_imported_alb = lb.ApplicationLoadBalancer.from_application_load_balancer_attributes(
-            self,
-            'CeleryImportedALB',
-            load_balancer_arn=celery_alb.load_balancer_arn,
-            vpc=vpc,
-            security_group_id=celery_sg.security_group_id,
-            load_balancer_dns_name=celery_alb.load_balancer_dns_name
-        )
-
-        celery_ecs_service = ecs_patterns.ApplicationLoadBalancedFargateService(
-            self,
-            'CeleryService',
-            cluster=cluster,
-            task_definition=celery_ecs_task_definition,
-            load_balancer=celery_imported_alb,
-            security_groups=[celery_sg],
-            open_listener=False,
-            desired_count=1
-        )
-
-        celery_ecs_service.target_group.configure_health_check(
-            path='/',
-            enabled=True,
-            healthy_http_codes='200-302'
         )
 
         consoleme_imported_alb = lb.ApplicationLoadBalancer.from_application_load_balancer_attributes(

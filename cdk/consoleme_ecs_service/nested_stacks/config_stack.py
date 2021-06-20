@@ -2,10 +2,9 @@
 Configuration stack for running ConsoleMe on ECS
 """
 
+from uuid import uuid4
 import yaml
 
-from uuid import uuid4
-from secrets import token_urlsafe
 from aws_cdk import (
     aws_cognito as cognito,
     aws_lambda as lambda_,
@@ -87,7 +86,7 @@ class ConfigStack(cdk.NestedStack):
             role_arn=create_configuration_lambda_role_arn
         )
 
-        jwt_secret = token_urlsafe(16)
+        jwt_secret = config_yaml['jwt_secret']
 
         create_configuration_lambda = lambda_python(
             self,

@@ -56,8 +56,7 @@ class ConsolemeEcsServiceStack(cdk.Stack):
             self,
             'ALB',
             vpc=vpc_stack.vpc,
-            consoleme_sg=vpc_stack.consoleme_sg,
-            celery_sg=vpc_stack.celery_sg
+            consoleme_sg=vpc_stack.consoleme_sg
         )
 
         domain_stack = DomainStack(
@@ -95,8 +94,6 @@ class ConsolemeEcsServiceStack(cdk.Stack):
             vpc=vpc_stack.vpc,
             consoleme_alb=alb_stack.consoleme_alb,
             consoleme_sg=vpc_stack.consoleme_sg,
-            celery_alb=alb_stack.celery_alb,
-            celery_sg=vpc_stack.celery_sg,
             s3_bucket_name=shared_stack.s3_bucket.bucket_name,
             certificate=domain_stack.certificate,
             task_role_arn=iam_stack.ecs_task_role.role_arn,
