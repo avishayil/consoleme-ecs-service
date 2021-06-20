@@ -52,14 +52,6 @@ class VPCStack(cdk.NestedStack):
             description='Celery security group'
         )
 
-        service_sg = ec2.SecurityGroup(
-            self,
-            'ServiceSG',
-            vpc=vpc,
-            description='Consoleme ECS service containers security group',
-            allow_all_outbound=True
-        )
-
         redis_sg = ec2.SecurityGroup(
             self,
             'ECSG',
@@ -68,11 +60,10 @@ class VPCStack(cdk.NestedStack):
             allow_all_outbound=True
         )
 
-        redis_sg.connections.allow_from(service_sg, port_range=ec2.Port.tcp(
+        redis_sg.connections.allow_from(consoleme_sg, port_range=ec2.Port.tcp(
             port=6379), description='Allow ingress from ConsoleMe containers')
 
         self.vpc = vpc
-        self.service_sg = service_sg
         self.redis_sg = redis_sg
         self.consoleme_sg = consoleme_sg
         self.celery_sg = celery_sg
