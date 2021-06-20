@@ -4,6 +4,16 @@ verify_ssl = true
 
 [dev-packages]
 consoleme_ecs_service = {editable = true,path = "cdk"}
+pytest = "*"
+pytest-mock = "*"
+pytest-cov = "*"
+pytest-html = "*"
+pylint = "*"
+pylint-venv = "*"
+pre-commit = "*"
+gitlint = "*"
+yamllint = "*"
+checkov = "*"
 
 [packages]
 boto3 = "*"

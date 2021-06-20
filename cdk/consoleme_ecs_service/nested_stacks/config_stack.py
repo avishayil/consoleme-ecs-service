@@ -1,3 +1,7 @@
+"""
+Configuration stack for running ConsoleMe on ECS
+"""
+
 import secrets
 import uuid
 import yaml
@@ -6,7 +10,6 @@ from aws_cdk import (
     aws_cognito as cognito,
     aws_lambda as lambda_,
     aws_iam as iam,
-    aws_s3 as s3,
     custom_resources as cr,
     aws_logs as logs,
     aws_elasticache as ec,
@@ -17,6 +20,9 @@ from aws_cdk.aws_lambda_python import PythonFunction as lambda_python
 
 
 class ConfigStack(cdk.NestedStack):
+    """
+    Configuration stack for running ConsoleMe on ECS
+    """
 
     def __init__(self, scope: cdk.Construct, id: str,
                  cognito_user_pool: cognito.UserPool, s3_bucket_name: str,
@@ -111,7 +117,7 @@ class ConfigStack(cdk.NestedStack):
             log_retention=logs.RetentionDays.ONE_WEEK
         )
 
-        create_configuration_resource = cdk.CustomResource(
+        cdk.CustomResource(
             self,
             'CreateConfigurationFile',
             service_token=create_configuration_resource_provider.service_token,

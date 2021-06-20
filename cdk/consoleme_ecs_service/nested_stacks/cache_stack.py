@@ -1,3 +1,7 @@
+"""
+Cache stack for running ConsoleMe on ECS
+"""
+
 from aws_cdk import (
     aws_ec2 as ec2,
     aws_elasticache as ec,
@@ -6,6 +10,9 @@ from aws_cdk import (
 
 
 class CacheStack(cdk.NestedStack):
+    """
+    Cache stack for running ConsoleMe on ECS
+    """
 
     def __init__(self, scope: cdk.Construct, id: str,
                  vpc: ec2.Vpc, redis_sg: ec2.SecurityGroup, **kwargs) -> None:

@@ -1,3 +1,7 @@
+"""
+Spoke accounts stack for running ConsoleMe on ECS
+"""
+
 import boto3
 
 from aws_cdk import (
@@ -9,6 +13,10 @@ from constants import SPOKE_BASE_NAME
 
 
 class ConsolemeSpokeAccountsStack(cdk.Stack):
+    """
+    Spoke accounts stack for running ConsoleMe on ECS
+    Granting the neccesary permissions for ConsoleMe main account role
+    """
 
     def __init__(self, scope: cdk.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)

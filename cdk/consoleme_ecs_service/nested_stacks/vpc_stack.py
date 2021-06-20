@@ -1,3 +1,7 @@
+"""
+VPC stack for running ConsoleMe on ECS
+"""
+
 import urllib.request
 
 from aws_cdk import (
@@ -7,6 +11,9 @@ from aws_cdk import (
 
 
 class VPCStack(cdk.NestedStack):
+    """
+    VPC stack for running ConsoleMe on ECS
+    """
 
     def __init__(self, scope: cdk.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)

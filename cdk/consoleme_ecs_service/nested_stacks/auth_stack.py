@@ -1,7 +1,10 @@
+"""
+Authentication stack for running ConsoleMe on ECS
+"""
+
 from aws_cdk import (
     aws_cognito as cognito,
     custom_resources as cr,
-    aws_logs as logs,
     core as cdk
 )
 
@@ -9,6 +12,9 @@ from constants import APPLICATION_PREFIX, APPLICATION_SUFFIX, ADMIN_TEMP_PASSWOR
 
 
 class AuthStack(cdk.NestedStack):
+    """
+    Authentication stack for running ConsoleMe on ECS
+    """
 
     def __init__(self, scope: cdk.Construct, id: str, domain_name: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
@@ -21,7 +27,7 @@ class AuthStack(cdk.NestedStack):
             removal_policy=cdk.RemovalPolicy.DESTROY
         )
 
-        cognito_user_pool_domain = cognito.UserPoolDomain(
+        cognito.UserPoolDomain(
             self,
             'UserPoolDomain',
             cognito_domain=cognito.CognitoDomainOptions(

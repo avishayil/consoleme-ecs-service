@@ -1,3 +1,5 @@
+---
+
 url: https://{issuer}
 
 tornado:
@@ -96,11 +98,11 @@ user_role_creator:
   default_trust_policy:
     Version: '2012-10-17'
     Statement:
-        - Effect: Allow
-          Principal:
-              AWS:
-                  - arn:aws:iam::{account_number}:root
-          Action: sts:AssumeRole
+      - Effect: Allow
+        Principal:
+          AWS:
+            - arn:aws:iam::{account_number}:root
+        Action: sts:AssumeRole
 
 challenge_url:
   enabled: true

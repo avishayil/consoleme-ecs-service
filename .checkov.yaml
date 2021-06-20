@@ -1,0 +1,12 @@
+---
+
+branch: master
+directory:
+  - cdk.out
+download-external-modules: false
+evaluate-variables: true
+external-modules-download-path: .external_modules
+framework: cloudformation
+no-guide: true
+output: cli
+quiet: true

@@ -1,8 +1,11 @@
+"""
+Compute stack for running ConsoleMe on ECS
+"""
+
 from aws_cdk import (
     aws_ec2 as ec2,
     aws_ecs as ecs,
     aws_ecs_patterns as ecs_patterns,
-    aws_elasticache as ec,
     aws_elasticloadbalancingv2 as lb,
     aws_logs as logs,
     aws_iam as iam,
@@ -14,6 +17,9 @@ from constants import CONTAINER_IMAGE
 
 
 class ComputeStack(cdk.NestedStack):
+    """
+    Compute stack for running ConsoleMe on ECS
+    """
 
     def __init__(self, scope: cdk.Construct, id: str,
                  vpc: ec2.Vpc, service_sg: ec2.SecurityGroup,
@@ -50,7 +56,7 @@ class ComputeStack(cdk.NestedStack):
 
         # ECS Container definition, service, target group and ALB attachment
 
-        container = ecs_task_definition.add_container(
+        ecs_task_definition.add_container(
             'Container',
             image=ecs.ContainerImage.from_registry(CONTAINER_IMAGE),
             privileged=False,
@@ -74,7 +80,7 @@ class ComputeStack(cdk.NestedStack):
                 "bash", "-c", "python scripts/retrieve_or_decode_configuration.py; python consoleme/__main__.py"]
         )
 
-        celery_container = ecs_task_definition.add_container(
+        ecs_task_definition.add_container(
             'CeleryContainer',
             image=ecs.ContainerImage.from_registry(CONTAINER_IMAGE),
             privileged=False,

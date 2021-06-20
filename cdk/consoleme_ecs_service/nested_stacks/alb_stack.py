@@ -1,3 +1,7 @@
+"""
+Application load balancer stack for running ConsoleMe on ECS
+"""
+
 from aws_cdk import (
     aws_ec2 as ec2,
     aws_elasticloadbalancingv2 as lb,
@@ -6,6 +10,9 @@ from aws_cdk import (
 
 
 class ALBStack(cdk.NestedStack):
+    """
+    Application load balancer stack for running ConsoleMe on ECS
+    """
 
     def __init__(self, scope: cdk.Construct, id: str,
                  vpc: ec2.Vpc, alb_sg: ec2.SecurityGroup, **kwargs) -> None:
