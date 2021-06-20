@@ -25,7 +25,7 @@ class VPCStack(cdk.NestedStack):
             max_azs=2
         )
 
-        lb_sg = ec2.SecurityGroup(
+        consoleme_sg = ec2.SecurityGroup(
             self,
             'LBSG',
             vpc=vpc,
@@ -38,18 +38,10 @@ class VPCStack(cdk.NestedStack):
         my_ip_cidr = urllib.request.urlopen(
             'http://checkip.amazonaws.com').read().decode('utf-8').strip() + '/32'
 
-        lb_sg.add_ingress_rule(
+        consoleme_sg.add_ingress_rule(
             peer=ec2.Peer.ipv4(cidr_ip=my_ip_cidr),
             connection=ec2.Port.tcp(port=443),
             description='Allow HTTPS traffic'
-        )
-
-        service_sg = ec2.SecurityGroup(
-            self,
-            'ServiceSG',
-            vpc=vpc,
-            description='Consoleme ECS service containers security group',
-            allow_all_outbound=True
         )
 
         redis_sg = ec2.SecurityGroup(
@@ -60,10 +52,9 @@ class VPCStack(cdk.NestedStack):
             allow_all_outbound=True
         )
 
-        redis_sg.connections.allow_from(service_sg, port_range=ec2.Port.tcp(
+        redis_sg.connections.allow_from(consoleme_sg, port_range=ec2.Port.tcp(
             port=6379), description='Allow ingress from ConsoleMe containers')
 
         self.vpc = vpc
-        self.service_sg = service_sg
         self.redis_sg = redis_sg
-        self.alb_sg = lb_sg
+        self.consoleme_sg = consoleme_sg

@@ -91,8 +91,8 @@ $ cdk deploy --all
 ```
 
 Don't forget to approve the template and security resources before the deployment.
-
 Deployment time for the main account should be less than 20 minutes.
+You can control scaling of the ECS tasks amount on the `config.yaml` configuration file. The default is minimum of 2 tasks and maximum of 10 tasks. 
 
 ### Docker
 
@@ -108,9 +108,9 @@ You can set the user temporary password in the `config.yaml` file, login and upd
 ## Security
 
 - You should configure the admin user temporary password on the `config.yaml` file.
+- You should set a new JWT secret for authentication purposes on the `config.yaml` file.
 - During the deployment, a configuration file with all the relevant secrets is created and stored on an S3 bucket.
 - Authentication to the ConsoleMe is done by AWS Cognito user pool.
-- A random, URL safe JWT secret is created during the deployment phase using the `secrets` library.
 - ECS containers are running in non-privileged mode, according to the docker best practices.
 - During the deployment time, the cdk stack will try to determine your public ip address automatically using `checkip.amazonaws.com`.
   Then, it would add only this ip address to the ingress rules of the security group of the public load balancer.

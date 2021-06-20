@@ -2,8 +2,7 @@
 Configuration stack for running ConsoleMe on ECS
 """
 
-import secrets
-import uuid
+from uuid import uuid4
 import yaml
 
 from aws_cdk import (
@@ -87,6 +86,8 @@ class ConfigStack(cdk.NestedStack):
             role_arn=create_configuration_lambda_role_arn
         )
 
+        jwt_secret = config_yaml['jwt_secret']
+
         create_configuration_lambda = lambda_python(
             self,
             'CreateConfigurationFileLambda',
@@ -96,7 +97,7 @@ class ConfigStack(cdk.NestedStack):
             role=imported_create_configuration_lambda_role,
             environment={
                 'DEPLOYMENT_BUCKET': s3_bucket_name,
-                'JWT_SECRET': secrets.token_urlsafe(16),
+                'JWT_SECRET': jwt_secret,
                 'OIDC_CLIENT_ID': cognito_user_pool_client.user_pool_client_id,
                 'OIDC_CLIENT_SECRET': cognito_user_pool_client_secret,
                 'OIDC_METADATA_URL': 'https://cognito-idp.' + self.region + '.amazonaws.com/' + cognito_user_pool.user_pool_id + '/.well-known/openid-configuration',
@@ -121,5 +122,5 @@ class ConfigStack(cdk.NestedStack):
             'CreateConfigurationFile',
             service_token=create_configuration_resource_provider.service_token,
             removal_policy=cdk.RemovalPolicy.DESTROY,
-            properties={'UUID': str(uuid.uuid4())}
+            properties={'UUID': str(uuid4())}
         )
