@@ -66,15 +66,6 @@ class IAMStack(cdk.NestedStack):
         ecs_task_role.add_to_policy(
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
-                actions=['ses:sendemail', 'ses:sendrawemail'],
-                resources=['*'],
-                conditions={'StringLike': {'ses:FromAddress': ['admin@yourdomain.com']}} # TODO: Generate address
-            )
-        )
-
-        ecs_task_role.add_to_policy(
-            iam.PolicyStatement(
-                effect=iam.Effect.ALLOW,
                 actions=[
                     'autoscaling:Describe*',
                     'cloudwatch:Get*',

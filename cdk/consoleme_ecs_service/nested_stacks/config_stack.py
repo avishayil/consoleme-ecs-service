@@ -101,7 +101,6 @@ class ConfigStack(cdk.NestedStack):
                 'OIDC_CLIENT_SECRET': cognito_user_pool_client_secret,
                 'OIDC_METADATA_URL': 'https://cognito-idp.' + self.region + '.amazonaws.com/' + cognito_user_pool.user_pool_id + '/.well-known/openid-configuration',
                 'REDIS_HOST': redis.attr_redis_endpoint_address,
-                'SES_IDENTITY_ARN': 'arn:aws:ses:eu-west-1:123456789123:identity/domain.com',  # TODO: Create identity
                 'SUPPORT_CHAT_URL': 'https://discord.gg/nQVpNGGkYu',
                 'APPLICATION_ADMIN': 'consoleme_admin',
                 'ACCOUNT_NUMBER': self.account,
