@@ -25,7 +25,7 @@ class VPCStack(cdk.NestedStack):
             max_azs=2
         )
 
-        lb_sg = ec2.SecurityGroup(
+        consoleme_sg = ec2.SecurityGroup(
             self,
             'LBSG',
             vpc=vpc,
@@ -38,10 +38,18 @@ class VPCStack(cdk.NestedStack):
         my_ip_cidr = urllib.request.urlopen(
             'http://checkip.amazonaws.com').read().decode('utf-8').strip() + '/32'
 
-        lb_sg.add_ingress_rule(
+        consoleme_sg.add_ingress_rule(
             peer=ec2.Peer.ipv4(cidr_ip=my_ip_cidr),
             connection=ec2.Port.tcp(port=443),
             description='Allow HTTPS traffic'
+        )
+
+        celery_sg = ec2.SecurityGroup(
+            self,
+            'CelerySG',
+            vpc=vpc,
+            allow_all_outbound=True,
+            description='Celery security group'
         )
 
         service_sg = ec2.SecurityGroup(
@@ -66,4 +74,6 @@ class VPCStack(cdk.NestedStack):
         self.vpc = vpc
         self.service_sg = service_sg
         self.redis_sg = redis_sg
-        self.alb_sg = lb_sg
+        self.consoleme_sg = consoleme_sg
+        self.celery_sg = celery_sg
+

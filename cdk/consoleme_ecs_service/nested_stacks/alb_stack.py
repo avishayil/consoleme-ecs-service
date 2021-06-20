@@ -15,26 +15,44 @@ class ALBStack(cdk.NestedStack):
     """
 
     def __init__(self, scope: cdk.Construct, id: str,
-                 vpc: ec2.Vpc, alb_sg: ec2.SecurityGroup, **kwargs) -> None:
+                 vpc: ec2.Vpc, consoleme_sg: ec2.SecurityGroup, celery_sg: ec2.SecurityGroup, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # ECS Load Balancer
 
-        ecs_loadbalancer = lb.ApplicationLoadBalancer(
+        celery_alb = lb.ApplicationLoadBalancer(
             self,
-            'ServiceALB',
+            'CeleryALB',
+            vpc=vpc,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE),
+            internet_facing=False
+        )
+
+        celery_alb.add_security_group(
+            ec2.SecurityGroup.from_security_group_id(
+                self,
+                'ImportedCeleryLBSG',
+                security_group_id=celery_sg.security_group_id,
+                mutable=False
+            )
+        )
+
+        consoleme_alb = lb.ApplicationLoadBalancer(
+            self,
+            'ConsolemeALB',
             vpc=vpc,
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
             internet_facing=True
         )
 
-        ecs_loadbalancer.add_security_group(
+        consoleme_alb.add_security_group(
             ec2.SecurityGroup.from_security_group_id(
                 self,
-                'ImportedLBSG',
-                security_group_id=alb_sg.security_group_id,
+                'ImportedConsolemeLBSG',
+                security_group_id=consoleme_sg.security_group_id,
                 mutable=False
             )
         )
 
-        self.alb = ecs_loadbalancer
+        self.consoleme_alb = consoleme_alb
+        self.celery_alb = celery_alb

@@ -10,6 +10,7 @@ from aws_cdk import (
     aws_logs as logs,
     aws_iam as iam,
     aws_certificatemanager as acm,
+    aws_applicationautoscaling as applicationautoscaling,
     core as cdk
 )
 
@@ -22,14 +23,11 @@ class ComputeStack(cdk.NestedStack):
     """
 
     def __init__(self, scope: cdk.Construct, id: str,
-                 vpc: ec2.Vpc, service_sg: ec2.SecurityGroup,
-                 s3_bucket_name: str, certificate: acm.Certificate,
-                 alb: lb.ApplicationLoadBalancer, alb_sg: ec2.SecurityGroup,
+                 vpc: ec2.Vpc, s3_bucket_name: str, certificate: acm.Certificate,
+                 celery_alb: lb.ApplicationLoadBalancer, celery_sg: ec2.SecurityGroup,
+                 consoleme_alb: lb.ApplicationLoadBalancer, consoleme_sg: ec2.SecurityGroup,
                  task_role_arn: str, task_execution_role_arn: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
-
-        # S3 Bucket Details
-
 
         # ECS Task definition and volumes
 
@@ -45,9 +43,18 @@ class ComputeStack(cdk.NestedStack):
             role_arn=task_execution_role_arn
         )
 
-        ecs_task_definition = ecs.FargateTaskDefinition(
+        consoleme_ecs_task_definition = ecs.FargateTaskDefinition(
             self,
-            'TaskDefinition',
+            'ConsolemeTaskDefinition',
+            cpu=2048,
+            memory_limit_mib=4096,
+            execution_role=imported_task_execution_role,
+            task_role=imported_task_role
+        )
+
+        celery_ecs_task_definition = ecs.FargateTaskDefinition(
+            self,
+            'CeleryTaskDefinition',
             cpu=2048,
             memory_limit_mib=4096,
             execution_role=imported_task_execution_role,
@@ -56,7 +63,7 @@ class ComputeStack(cdk.NestedStack):
 
         # ECS Container definition, service, target group and ALB attachment
 
-        ecs_task_definition.add_container(
+        consoleme_ecs_task_definition.add_container(
             'Container',
             image=ecs.ContainerImage.from_registry(CONTAINER_IMAGE),
             privileged=False,
@@ -80,10 +87,17 @@ class ComputeStack(cdk.NestedStack):
                 "bash", "-c", "python scripts/retrieve_or_decode_configuration.py; python consoleme/__main__.py"]
         )
 
-        ecs_task_definition.add_container(
+        celery_ecs_task_definition.add_container(
             'CeleryContainer',
             image=ecs.ContainerImage.from_registry(CONTAINER_IMAGE),
             privileged=False,
+            port_mappings=[
+                ecs.PortMapping(
+                    container_port=6379,
+                    host_port=6379,
+                    protocol=ecs.Protocol.TCP
+                )
+            ],
             logging=ecs.LogDriver.aws_logs(
                 stream_prefix='CeleryContainerLogs-',
                 log_retention=logs.RetentionDays.ONE_WEEK
@@ -104,36 +118,95 @@ class ComputeStack(cdk.NestedStack):
             vpc=vpc
         )
 
-        imported_alb = lb.ApplicationLoadBalancer.from_application_load_balancer_attributes(
+        celery_imported_alb = lb.ApplicationLoadBalancer.from_application_load_balancer_attributes(
             self,
-            'ServiceImportedALB',
-            load_balancer_arn=alb.load_balancer_arn,
+            'CeleryImportedALB',
+            load_balancer_arn=celery_alb.load_balancer_arn,
             vpc=vpc,
-            security_group_id=alb_sg.security_group_id,
-            load_balancer_dns_name=alb.load_balancer_dns_name
+            security_group_id=celery_sg.security_group_id,
+            load_balancer_dns_name=celery_alb.load_balancer_dns_name
         )
 
-        ecs_service = ecs_patterns.ApplicationLoadBalancedFargateService(
-            self, 'Service',
+        celery_ecs_service = ecs_patterns.ApplicationLoadBalancedFargateService(
+            self,
+            'CeleryService',
             cluster=cluster,
-            task_definition=ecs_task_definition,
-            load_balancer=imported_alb,
-            desired_count=1,
-            security_groups=[service_sg],
-            open_listener=False
+            task_definition=celery_ecs_task_definition,
+            load_balancer=celery_imported_alb,
+            security_groups=[celery_sg],
+            open_listener=False,
+            desired_count=1
         )
 
-        ecs_service.target_group.configure_health_check(
+        celery_ecs_service.target_group.configure_health_check(
             path='/',
             enabled=True,
             healthy_http_codes='200-302'
         )
 
-        imported_alb.add_listener(
-            'ServiceALBListener',
+        consoleme_imported_alb = lb.ApplicationLoadBalancer.from_application_load_balancer_attributes(
+            self,
+            'ConsolemeImportedALB',
+            load_balancer_arn=consoleme_alb.load_balancer_arn,
+            vpc=vpc,
+            security_group_id=consoleme_sg.security_group_id,
+            load_balancer_dns_name=consoleme_alb.load_balancer_dns_name
+        )
+
+        consoleme_ecs_service = ecs_patterns.ApplicationLoadBalancedFargateService(
+            self,
+            'Service',
+            cluster=cluster,
+            task_definition=consoleme_ecs_task_definition,
+            load_balancer=consoleme_imported_alb,
+            security_groups=[consoleme_sg],
+            open_listener=False
+        )
+
+        consoleme_ecs_service.target_group.configure_health_check(
+            path='/',
+            enabled=True,
+            healthy_http_codes='200-302'
+        )
+
+        consoleme_ecs_service_scaling_target = applicationautoscaling.ScalableTarget(
+            self,
+            'AutoScalingGroup',
+            max_capacity=10,
+            min_capacity=2,
+            resource_id='service/' + cluster.cluster_name + '/' + consoleme_ecs_service.service.service_name,
+            scalable_dimension='ecs:service:DesiredCount',
+            service_namespace=applicationautoscaling.ServiceNamespace.ECS,
+            role=iam.Role(
+                self,
+                'AutoScaleRole',
+                assumed_by=iam.ServicePrincipal(service='ecs-tasks.amazonaws.com'),
+                description='Role for ECS auto scaling group',
+                managed_policies=[
+                    iam.ManagedPolicy.from_managed_policy_arn(
+                        self,
+                        'AutoScalingManagedPolicy',
+                        managed_policy_arn='arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceAutoscaleRole'
+                    )
+                ]
+            )
+        )
+
+        applicationautoscaling.TargetTrackingScalingPolicy(
+            self,
+            'AutoScalingPolicy',
+            scaling_target=consoleme_ecs_service_scaling_target,
+            scale_in_cooldown=cdk.Duration.seconds(amount=10),
+            scale_out_cooldown=cdk.Duration.seconds(amount=10),
+            target_value=50,
+            predefined_metric=applicationautoscaling.PredefinedMetric.ECS_SERVICE_AVERAGE_CPU_UTILIZATION
+        )
+
+        consoleme_imported_alb.add_listener(
+            'ConsolemeALBListener',
             protocol=lb.ApplicationProtocol.HTTPS,
             port=443,
             certificates=[certificate],
             default_action=lb.ListenerAction.forward(
-                target_groups=[ecs_service.target_group])
+                target_groups=[consoleme_ecs_service.target_group])
         )

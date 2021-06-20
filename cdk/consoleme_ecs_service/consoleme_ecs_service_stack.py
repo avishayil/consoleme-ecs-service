@@ -56,13 +56,14 @@ class ConsolemeEcsServiceStack(cdk.Stack):
             self,
             'ALB',
             vpc=vpc_stack.vpc,
-            alb_sg=vpc_stack.alb_sg
+            consoleme_sg=vpc_stack.consoleme_sg,
+            celery_sg=vpc_stack.celery_sg
         )
 
         domain_stack = DomainStack(
             self,
             'Domain',
-            alb=alb_stack.alb
+            consoleme_alb=alb_stack.consoleme_alb
         )
 
         auth_stack = AuthStack(
@@ -92,9 +93,10 @@ class ConsolemeEcsServiceStack(cdk.Stack):
             self,
             'Compute',
             vpc=vpc_stack.vpc,
-            service_sg=vpc_stack.service_sg,
-            alb=alb_stack.alb,
-            alb_sg=vpc_stack.alb_sg,
+            consoleme_alb=alb_stack.consoleme_alb,
+            consoleme_sg=vpc_stack.consoleme_sg,
+            celery_alb=alb_stack.celery_alb,
+            celery_sg=vpc_stack.celery_sg,
             s3_bucket_name=shared_stack.s3_bucket.bucket_name,
             certificate=domain_stack.certificate,
             task_role_arn=iam_stack.ecs_task_role.role_arn,
