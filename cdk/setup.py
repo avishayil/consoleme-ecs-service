@@ -1,3 +1,7 @@
+"""
+Setup tools for consoleme_ecs_service cdk library
+"""
+
 import setuptools
 
 

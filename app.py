@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+"""
+CDK Application for running ConsoleMe on ECS
+"""
+
 import os
 import boto3
 import yaml

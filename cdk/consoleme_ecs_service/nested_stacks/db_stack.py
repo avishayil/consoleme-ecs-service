@@ -1,3 +1,7 @@
+"""
+Database stack for running ConsoleMe on ECS
+"""
+
 from aws_cdk import (
     aws_dynamodb as db,
     core as cdk
@@ -5,13 +9,16 @@ from aws_cdk import (
 
 
 class DBStack(cdk.NestedStack):
+    """
+    Database stack for running ConsoleMe on ECS
+    """
 
     def __init__(self, scope: cdk.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # DynamoDB tables
 
-        iamroles_table = db.Table(
+        db.Table(
             self,
             'IAMRolesTable',
             table_name='consoleme_iamroles_global',
@@ -25,7 +32,7 @@ class DBStack(cdk.NestedStack):
             removal_policy=cdk.RemovalPolicy.DESTROY
         )
 
-        config_table = db.Table(
+        db.Table(
             self,
             'ConfigTable',
             table_name='consoleme_config_global',
@@ -82,7 +89,7 @@ class DBStack(cdk.NestedStack):
             projection_type=db.ProjectionType.ALL
         )
 
-        cloudtrail_table = db.Table(
+        db.Table(
             self,
             'CloudTrailTable',
             table_name='consoleme_cloudtrail',
@@ -96,7 +103,7 @@ class DBStack(cdk.NestedStack):
             removal_policy=cdk.RemovalPolicy.DESTROY
         )
 
-        users_table = db.Table(
+        db.Table(
             self,
             'UsersTable',
             table_name='consoleme_users_global',

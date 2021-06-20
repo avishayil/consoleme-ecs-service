@@ -1,3 +1,7 @@
+"""
+IAM stack for running ConsoleMe on ECS
+"""
+
 from aws_cdk import (
     aws_iam as iam,
     aws_s3 as s3,
@@ -6,6 +10,9 @@ from aws_cdk import (
 
 
 class IAMStack(cdk.NestedStack):
+    """
+    IAM stack for running ConsoleMe on ECS
+    """
 
     def __init__(self, scope: cdk.Construct, id: str,
                  s3_bucket: s3.Bucket, **kwargs) -> None:
@@ -53,15 +60,6 @@ class IAMStack(cdk.NestedStack):
                     'sts:assumerole'
                 ],
                 resources=['*']
-            )
-        )
-
-        ecs_task_role.add_to_policy(
-            iam.PolicyStatement(
-                effect=iam.Effect.ALLOW,
-                actions=['ses:sendemail', 'ses:sendrawemail'],
-                resources=['*'],
-                conditions={'StringLike': {'ses:FromAddress': ['admin@yourdomain.com']}} # TODO: Generate address
             )
         )
 
@@ -223,12 +221,6 @@ class IAMStack(cdk.NestedStack):
                 actions=['s3:PutObject', 's3:DeleteObject'],
                 resources = [s3_bucket.bucket_arn + '/*']
             )
-        )
-
-        configuration_lambda_statement = iam.PolicyStatement(
-            effect=iam.Effect.ALLOW,
-            actions=['s3:PutObject'],
-            resources=[create_configuration_lambda_role.role_arn]
         )
 
         self.ecs_task_role = ecs_task_role

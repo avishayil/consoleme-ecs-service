@@ -1,0 +1,16 @@
+---
+
+extends: default
+
+ignore: |
+  resources/create_config_lambda/config.yaml
+  cdk.out/**/*.yaml
+  node_modules/
+
+rules:
+  line-length:
+    level: warning
+  document-start:
+    level: warning
+  empty-lines:
+    level: warning

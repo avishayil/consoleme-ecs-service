@@ -1,0 +1,22 @@
+---
+
+os: linux
+dist: xenial
+language: python
+python:
+  - '3.7'
+env:
+  global:
+    - secure: "i5QSyIuoNH4ntlAhFeP5s69gj/k5lCsbk05TGcjnfOG3lLNJwxE9V/m9KCJt19bgfin6b1WuIXirqmKT6WEMnHC4lAFhrKcA8IBs/zbHjuB6vs0zrk+HDQQsejC8ZvDKA3SbZmMt86hd4Nu0ngiqTAi9SX3r//16rv6vSQF7nkuMGbw//mw9CuY2YPsdMYIv/ttdHK+I5gjxVNbVx93mLAat7kYVQNetHFWsg3lZJ/T7zVTmpdzGlZ3AnbRleYcBkfZM36zeshR81IVbs1NV3bwiYGGUQiBgELF2ZrQh+fuDVwFCNdUM3HrTspfMA6XCzsUkRfKt9livyCI10pg8aDRlg2DcArkmk6RyZREOFZLeWyMEn/pZmzTwKcV5QfJ4i+mcTpNlZGXjPOLP7weSQmh3Yimamg99KtYKo9w3GqaH18wpTBWhni8k1OuRgppPJqJ4bOf6uQPQ3DxJjSSxIKNGCEi0t08jUCiXFDiLrXAZIb333DhaGDx7V60pyljOTOY0doyqcBWH/y0ztQaGRymgPk1cBGOMGz1mfe7NmTjYrDflHz5d51YViPQvQ1dAi63kxVfxC6FX2NuUek8kBEbfCVfI6gkPyXYcIRjyd4IJIByLs26lUEZfa+48khS4F0W7ltXbd3nzFdyWpGn9aP7yKxI5JdPygBndkk8WF34="
+    - secure: "fwfB5VEFocIrb1kMVUi44Bc8pDxC78sdAPvHy/0PwhmqlukAjk7wU2IoCBq6u41auwllJBH02J4JtYQUCj/G1/8161Yy7TSvfX8xD+pZVaL0ZI4hv0kKuwLv8i2eXBYsZZ4HiD/mJAWIZS+SgLM805K3Rpq5+d2zTGbyTzQZn2RmZpqy+/KBa0YzWK2dQu87RV7xWvZzF5zlCd05EEEqoRfvELQHfkDQb6Jp3LHM64JDGRuXg/DFX/ajkP4G+vMCm3/QkcnJpG/o3K0+5WWFQCMgLeFnVVOYGEt/HF8QEhbR7ChxxCfAqJoeUOEzffWEjdduCpVKMJdgjERpYM60euhfuUkoqVhOZF8LZe6rdx2wn0Mb0Gti686+RTKb++E2F3XpTRMgcLK1LJkV1Q5+gGHkF8w3aW30vTlcuV5O7d2gskyUmnwXRjkXr4ktBpNxtotHcn7q3zXTFvrJZHi7xeDOdtqelm9YDZSiLuOk2VGAc9HihTesOBR22o/038KSOQTZeMyxGziy49+TGhHxoHHMgQxA+KF63eut8OCJu7+EpAt3ooyYbkjjsuK12CddfUsqg7WK5iQWXelnm2ErGVqP22bs2ZsF50hxcgz/eLrax9mtqN+VgapiGTxc1eCBQWVuLBVKlyzuC+e24f9BkvDbE9TsG6nc7e4Lir01md4="
+install:
+  - pip install pipenv
+  - pipenv install --dev
+  - nvm install 12.18.0 && nvm use 12.18.0
+  - npm install aws-cdk cdk-assume-role-credential-plugin -g
+  - cp config.yaml.example config.yaml
+  - cdk synth
+script:
+  - yamllint .
+  - pytest
+  - python -m pylint app.py `find tests/ -iname "*.py"; find cdk/ -iname "*.py"` --rcfile .pylintrc

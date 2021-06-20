@@ -1,5 +1,8 @@
+"""
+Main account stack for running ConsoleMe on ECS
+"""
+
 from aws_cdk import (
-    aws_s3 as s3,
     core as cdk
 )
 
@@ -18,6 +21,12 @@ from constants import BASE_NAME
 
 
 class ConsolemeEcsServiceStack(cdk.Stack):
+    """Main stack for the ConsoleMe service.
+
+    Attributes:
+        flight_speed     The maximum speed that such a bird can attain.
+        nesting_grounds  The locale where these birds congregate to reproduce.
+    """
 
     def __init__(self, scope: cdk.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
@@ -33,7 +42,7 @@ class ConsolemeEcsServiceStack(cdk.Stack):
             s3_bucket=shared_stack.s3_bucket
         )
 
-        db_stack = DBStack(
+        DBStack(
             self,
             'DB'
         )
