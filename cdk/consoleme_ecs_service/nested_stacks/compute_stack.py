@@ -28,6 +28,8 @@ class ComputeStack(cdk.NestedStack):
                  task_role_arn: str, task_execution_role_arn: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
+        config_yaml = yaml.load(open('config.yaml'), Loader=yaml.FullLoader)
+
         # ECS Task definition and volumes
 
         imported_task_role = iam.Role.from_role_arn(
@@ -129,8 +131,8 @@ class ComputeStack(cdk.NestedStack):
         consoleme_ecs_service_scaling_target = applicationautoscaling.ScalableTarget(
             self,
             'AutoScalingGroup',
-            max_capacity=10,
-            min_capacity=2,
+            max_capacity=config_yaml['max_capacity'],
+            min_capacity=config_yaml['min_capacity'],
             resource_id='service/' + cluster.cluster_name + '/' + consoleme_ecs_service.service.service_name,
             scalable_dimension='ecs:service:DesiredCount',
             service_namespace=applicationautoscaling.ServiceNamespace.ECS,

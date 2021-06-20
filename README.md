@@ -91,8 +91,8 @@ $ cdk deploy --all
 ```
 
 Don't forget to approve the template and security resources before the deployment.
-
 Deployment time for the main account should be less than 20 minutes.
+You can control scaling of the ECS tasks amount on the `config.yaml` configuration file. The default is minimum of 2 tasks and maximum of 10 tasks. 
 
 ### Docker
 
