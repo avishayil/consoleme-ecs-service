@@ -2,6 +2,8 @@
 Compute stack for running ConsoleMe on ECS
 """
 
+import yaml
+
 from aws_cdk import (
     aws_ec2 as ec2,
     aws_ecs as ecs,
